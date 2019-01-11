@@ -65,22 +65,28 @@ type InvoiceUpcomingInvoiceItemParams struct {
 	UnitAmount   *int64                                  `form:"unit_amount"`
 }
 
+// InvoiceTransferDataParams is the set of parameters allowed for the transfer_data hash.
+type InvoiceTransferDataParams struct {
+	Destination *string `form:"destination"`
+}
+
 // InvoiceParams is the set of parameters that can be used when creating or updating an invoice.
 // For more details see https://stripe.com/docs/api#create_invoice, https://stripe.com/docs/api#update_invoice.
 type InvoiceParams struct {
-	Params              `form:"*"`
-	AutoAdvance         *bool    `form:"auto_advance"`
-	ApplicationFee      *int64   `form:"application_fee"`
-	Billing             *string  `form:"billing"`
-	Customer            *string  `form:"customer"`
-	DaysUntilDue        *int64   `form:"days_until_due"`
-	DefaultSource       *string  `form:"default_source"`
-	Description         *string  `form:"description"`
-	DueDate             *int64   `form:"due_date"`
-	Paid                *bool    `form:"paid"`
-	StatementDescriptor *string  `form:"statement_descriptor"`
-	Subscription        *string  `form:"subscription"`
-	TaxPercent          *float64 `form:"tax_percent"`
+	Params               `form:"*"`
+	AutoAdvance          *bool                      `form:"auto_advance"`
+	ApplicationFeeAmount *int64                     `form:"application_fee_amount"`
+	Billing              *string                    `form:"billing"`
+	Customer             *string                    `form:"customer"`
+	DaysUntilDue         *int64                     `form:"days_until_due"`
+	DefaultSource        *string                    `form:"default_source"`
+	Description          *string                    `form:"description"`
+	DueDate              *int64                     `form:"due_date"`
+	Paid                 *bool                      `form:"paid"`
+	StatementDescriptor  *string                    `form:"statement_descriptor"`
+	Subscription         *string                    `form:"subscription"`
+	TaxPercent           *float64                   `form:"tax_percent"`
+	TransferData         *InvoiceTransferDataParams `form:"transfer_data"`
 
 	// These are all for exclusive use by GetNext.
 
@@ -96,6 +102,9 @@ type InvoiceParams struct {
 	SubscriptionTaxPercent         *float64                          `form:"subscription_tax_percent"`
 	SubscriptionTrialEnd           *int64                            `form:"subscription_trial_end"`
 	SubscriptionTrialFromPlan      *bool                             `form:"subscription_trial_from_plan"`
+
+	// This property is considered deprecated. Prefer using ApplicationFeeAmount
+	ApplicationFee *int64 `form:"application_fee"`
 }
 
 // InvoiceListParams is the set of parameters that can be used when listing invoices.
@@ -198,6 +207,7 @@ type Invoice struct {
 	Tax                       int64                `json:"tax"`
 	TaxPercent                float64              `json:"tax_percent"`
 	Total                     int64                `json:"total"`
+	TransferData              *InvoiceTransferData `json:"transfer_data"`
 	WebhooksDeliveredAt       int64                `json:"webhooks_delivered_at"`
 }
 
@@ -224,6 +234,11 @@ type InvoiceLine struct {
 	Subscription     string            `json:"subscription"`
 	SubscriptionItem string            `json:"subscription_item"`
 	Type             InvoiceLineType   `json:"type"`
+}
+
+// InvoiceTransferData represents the information for the transfer_data associated with an invoice.
+type InvoiceTransferData struct {
+	Destination *Account `json:"destination"`
 }
 
 // Period is a structure representing a start and end dates.
