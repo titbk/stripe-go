@@ -46,6 +46,7 @@ matrix:
   fast_finish: true
 
 script:
+  - scripts/ruby.rb
   - make
   - make coverage
 
