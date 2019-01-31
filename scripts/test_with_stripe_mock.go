@@ -32,6 +32,7 @@ const (
 var portMatch = regexp.MustCompile(` port: (\d+)`)
 
 func main() {
+	var notStartedMessage string
 	var port string
 	var stripeMockProcess *os.Process
 
@@ -39,12 +40,18 @@ func main() {
 	// Maybe start stripe-mock
 	//
 
-	if _, err := os.Stat(pathSpec); os.IsNotExist(err) {
+	if os.Getenv("STRIPE_MOCK_DISABLE") != "" {
+		notStartedMessage = fmt.Sprintf("STRIPE_MOCK_DISABLE set, assuming stripe-mock is already running on port %v\n", port)
+	} else if _, err := os.Stat(pathSpec); os.IsNotExist(err) {
+		notStartedMessage = fmt.Sprintf("No custom spec file found, assuming stripe-mock is already running on port %v\n", port)
+	}
+
+	if notStartedMessage != "" {
 		port = os.Getenv("STRIPE_MOCK_PORT")
 		if port == "" {
 			port = defaultStripeMockPort
 		}
-		fmt.Printf("No custom spec file found, assuming stripe-mock is already running on port %v\n", port)
+		fmt.Printf(notStartedMessage)
 	} else {
 		var err error
 		port, stripeMockProcess, err = startStripeMock()
