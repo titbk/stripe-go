@@ -2,6 +2,41 @@ package stripe
 
 import "encoding/json"
 
+// IdentityVerificationDetailsCode is a machine-readable code specifying the
+// verification state of a legal entity
+type IdentityVerificationDetailsCode string
+
+// List of values that IdentityVerificationDetailsCode can take.
+const (
+	IdentityVerificationDetailsCodeFailedKeyedIdentity       IdentityVerificationDetailsCode = "failed_keyed_identity"
+	IdentityVerificationDetailsCodeFailedOther               IdentityVerificationDetailsCode = "failed_other"
+	IdentityVerificationDetailsCodeScanCorrupt               IdentityVerificationDetailsCode = "scan_corrupt"
+	IdentityVerificationDetailsCodeScanFailedGreyscale       IdentityVerificationDetailsCode = "scan_failed_greyscale"
+	IdentityVerificationDetailsCodeScanFailedOther           IdentityVerificationDetailsCode = "scan_failed_other"
+	IdentityVerificationDetailsCodeScanIDCountryNotSupported IdentityVerificationDetailsCode = "scan_id_country_not_supported"
+	IdentityVerificationDetailsCodeScanIDTypeNotSupported    IdentityVerificationDetailsCode = "scan_id_type_not_supported"
+	IdentityVerificationDetailsCodeScanNameMismatch          IdentityVerificationDetailsCode = "scan_name_mismatch"
+	IdentityVerificationDetailsCodeScanNotReadable           IdentityVerificationDetailsCode = "scan_not_readable"
+	IdentityVerificationDetailsCodeScanNotUploaded           IdentityVerificationDetailsCode = "scan_not_uploaded"
+)
+
+// IdentityVerificationStatus describes the different statuses for identity verification.
+type IdentityVerificationStatus string
+
+// List of values that IdentityVerificationStatus can take.
+const (
+	IdentityVerificationStatusPending    IdentityVerificationStatus = "pending"
+	IdentityVerificationStatusUnverified IdentityVerificationStatus = "unverified"
+	IdentityVerificationStatusVerified   IdentityVerificationStatus = "verified"
+)
+
+// DOBParams represents a DOB during account creation/updates.
+type DOBParams struct {
+	Day   *int64 `form:"day"`
+	Month *int64 `form:"month"`
+	Year  *int64 `form:"year"`
+}
+
 // RelationshipParams is used to set the relationship between an account and a person.
 type RelationshipParams struct {
 	AccountOpener    *bool    `form:"account_opener"`
@@ -52,11 +87,17 @@ type PersonListParams struct {
 	Relationship *RelationshipListParams `form:"relationship"`
 }
 
-// Relationship represents extra information needed for a Person.
+// DOB represents a Person's date of birth.
+type DOB struct {
+	Day   int64 `json:"day"`
+	Month int64 `json:"month"`
+	Year  int64 `json:"year"`
+}
+
+// Relationship represents how the Person relates to the business.
 type Relationship struct {
 	AccountOpener    bool    `json:"account_opener"`
 	Director         bool    `json:"director"`
-	Executive        bool    `json:"executive"`
 	Owner            bool    `json:"owner"`
 	PercentOwnership float64 `json:"percent_ownership"`
 	Title            string  `json:"title"`
@@ -69,33 +110,50 @@ type Requirements struct {
 	PastDue       []string `json:"past_due"`
 }
 
+// PersonVerificationDocument represents the documents associated with a Person.
+type PersonVerificationDocument struct {
+	Back        *File                           `json:"back"`
+	Details     string                          `json:"details"`
+	DetailsCode IdentityVerificationDetailsCode `json:"details_code"`
+	Front       *File                           `json:"front"`
+	Status      IdentityVerificationStatus      `json:"status"`
+}
+
+// PersonVerification is the structure for a person's verification details.
+type PersonVerification struct {
+	Details     string                          `json:"details"`
+	DetailsCode IdentityVerificationDetailsCode `json:"details_code"`
+	Document    *PersonVerificationDocument     `json:"document"`
+	Status      IdentityVerificationStatus      `json:"status"`
+}
+
 // Person is the resource representing a Stripe person.
 // For more details see https://stripe.com/docs/api#persons.
 type Person struct {
-	Account          string                `json:"account"`
-	Address          *AccountAddress       `json:"address"`
-	AddressKana      *AccountAddress       `json:"address_kana"`
-	AddressKanji     *AccountAddress       `json:"address_kanji"`
-	Deleted          bool                  `json:"deleted"`
-	DOB              *DOB                  `json:"dob"`
-	Email            string                `json:"email"`
-	FirstName        string                `json:"first_name"`
-	FirstNameKana    string                `json:"first_name_kana"`
-	FirstNameKanji   string                `json:"first_name_kanji"`
-	Gender           string                `json:"gender"`
-	ID               string                `json:"id"`
-	IDNumberProvided bool                  `json:"id_number_provided"`
-	LastName         string                `json:"last_name"`
-	LastNameKana     string                `json:"last_name_kana"`
-	LastNameKanji    string                `json:"last_name_kanji"`
-	MaidenName       string                `json:"maiden_name"`
-	Metadata         map[string]string     `json:"metadata"`
-	Object           string                `json:"object"`
-	Phone            string                `json:"phone"`
-	Relationship     *Relationship         `json:"relationship"`
-	Requirements     *Requirements         `json:"requirements"`
-	SSNLast4Provided bool                  `json:"ssn_last_4_provided"`
-	Verification     *IdentityVerification `json:"verification"`
+	Account          string              `json:"account"`
+	Address          *AccountAddress     `json:"address"`
+	AddressKana      *AccountAddress     `json:"address_kana"`
+	AddressKanji     *AccountAddress     `json:"address_kanji"`
+	Deleted          bool                `json:"deleted"`
+	DOB              *DOB                `json:"dob"`
+	Email            string              `json:"email"`
+	FirstName        string              `json:"first_name"`
+	FirstNameKana    string              `json:"first_name_kana"`
+	FirstNameKanji   string              `json:"first_name_kanji"`
+	Gender           string              `json:"gender"`
+	ID               string              `json:"id"`
+	IDNumberProvided bool                `json:"id_number_provided"`
+	LastName         string              `json:"last_name"`
+	LastNameKana     string              `json:"last_name_kana"`
+	LastNameKanji    string              `json:"last_name_kanji"`
+	MaidenName       string              `json:"maiden_name"`
+	Metadata         map[string]string   `json:"metadata"`
+	Object           string              `json:"object"`
+	Phone            string              `json:"phone"`
+	Relationship     *Relationship       `json:"relationship"`
+	Requirements     *Requirements       `json:"requirements"`
+	SSNLast4Provided bool                `json:"ssn_last_4_provided"`
+	Verification     *PersonVerification `json:"verification"`
 }
 
 // PersonList is a list of persons as retrieved from a list endpoint.
